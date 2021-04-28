@@ -2,7 +2,6 @@ const filterElem = document.getElementById("filters");
 const todoListElem = document.getElementById("todo-list");
 const bodyElem = document.body;
 const itemsLeftElem = document.getElementById("item-left");
-var todos = [];
 
 /* Behavior for changing theme button */
 document.querySelector("#main header .theme-btn").addEventListener("click", function print(){
@@ -95,7 +94,6 @@ put filter div on status bar on large screen
     const clearBtn = document.getElementById("clear-completed-btn");
     clearBtn.addEventListener("click", function(){
         let removeBtns = todoListElem.querySelectorAll('li[data-status="complete"] .remove-todo-btn');
-        console.log(removeBtns);
         for(let i = removeBtns.length - 1; i >= 0; i--){
             removeBtns[i].click(); //simulates the click on remove btn for completed list     
         }
@@ -103,23 +101,24 @@ put filter div on status bar on large screen
 })();
 
 function addTodo(task, completed = false){
-    let index = todos.length;
-    todos.push({task, completed});
-
     let li = document.createElement("li");
-    li.dataset.status = completed ? "complete" : "incomplete";
+    if(completed){
+        li.dataset.status = "complete";
+    } else {
+        li.dataset.status = "incomplete";
+        incrementItemsLeft(1);
+    }
 
     let checkbox = document.createElement("span");
     checkbox.className = "checkbox";
     checkbox.onclick = function(){
-        if(todos[index].completed){
-            todos[index].completed = false;
-            li.dataset.status = "incomplete"
+        if(li.dataset.status === "complete"){
+            li.dataset.status = "incomplete";
+            incrementItemsLeft(1);
         } else {
-            todos[index].completed = true;
-            li.dataset.status = "complete"
+            li.dataset.status = "complete";
+            incrementItemsLeft(-1);
         }
-        recalculateItemsLeft();
     }
 
     let todo = document.createElement("span");
@@ -129,20 +128,16 @@ function addTodo(task, completed = false){
     let removeBtn = document.createElement("span");
     removeBtn.className = "remove-todo-btn";
     removeBtn.onclick = function(){
-        todos.splice(index, 1);
+        if(li.dataset.status === "incomplete") incrementItemsLeft(-1);
         todoListElem.removeChild(li);
-        recalculateItemsLeft();
     }
 
     li.appendChild(checkbox);
     li.appendChild(todo);
     li.appendChild(removeBtn);
     todoListElem.appendChild(li);
-
-    recalculateItemsLeft();
 }
 
-function recalculateItemsLeft(){
-    console.log(todos.reduce((acc, currObj) => {return (currObj.completed) ? acc : acc + 1}, 0))
-    itemsLeftElem.textContent = todos.reduce((acc, currObj) => {return (currObj.completed) ? acc : acc + 1}, 0);
+function incrementItemsLeft(val){
+    itemsLeftElem.textContent = parseInt(itemsLeftElem.textContent) + val;
 }
