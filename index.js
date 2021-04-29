@@ -3,6 +3,8 @@ const todoListElem = document.getElementById("todo-list");
 const bodyElem = document.body;
 const itemsLeftElem = document.getElementById("item-left");
 
+var addDragNDrop = dragNdrop();
+
 /* Behavior for changing theme button */
 document.querySelector("#main header .theme-btn").addEventListener("click", function print(){
     bodyElem.dataset.theme = bodyElem.dataset.theme === "dark" ? "light" : "dark"
@@ -37,6 +39,7 @@ put filter div on status bar on large screen
         mainElem.insertAdjacentElement('afterend', filterElem);
     }
 })();
+
 
 /**load todo saved in todos.json file
  * (mimiking the server behavior)
@@ -136,8 +139,56 @@ function addTodo(task, completed = false){
     li.appendChild(todo);
     li.appendChild(removeBtn);
     todoListElem.appendChild(li);
+
+    addDragNDrop(li);
 }
 
 function incrementItemsLeft(val){
     itemsLeftElem.textContent = parseInt(itemsLeftElem.textContent) + val;
+}
+
+
+/* drag and drop feature */
+function dragNdrop(){
+    var currDraggedElem;
+
+    todoListElem.addEventListener("drop", function(e){
+        e.preventDefault();
+    })
+
+    function dragStart({target}){
+        currDraggedElem = target;
+        target.style.opacity = ".5";
+        target.style.cursor = "move";
+    }
+    function dragEnd({target}){
+        currDraggedElem = undefined;
+        target.style.opacity = null;
+        target.style.cursor = null;
+    }
+    function dragOver(e){
+        let target = e.target;
+        e.dataTransfer.dropEffect = "move";
+        e.preventDefault();
+        if(target !== currDraggedElem && target.parentNode === todoListElem){
+            if(indexOf(currDraggedElem) > indexOf(target)){
+                target.insertAdjacentElement("beforebegin", currDraggedElem);
+            } else{
+                target.insertAdjacentElement("afterend", currDraggedElem);
+            }
+        }
+    }
+    function indexOf(elem){
+        var array = todoListElem.children;
+        for(let i = array.length - 1; i >= 0; i--){
+            if(array[i] === elem) return i;
+        }
+    }
+
+    return (elem)=>{
+        elem.draggable = true;
+        elem.addEventListener("dragstart", dragStart);
+        elem.addEventListener("dragend", dragEnd);
+        elem.addEventListener("dragover", dragOver);
+    }
 }
