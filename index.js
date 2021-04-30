@@ -111,10 +111,7 @@ function addTodo(task, completed = false){
         li.dataset.status = "incomplete";
         incrementItemsLeft(1);
     }
-
-    let checkbox = document.createElement("span");
-    checkbox.className = "checkbox";
-    checkbox.onclick = function(){
+    li.onclick = function(){
         if(li.dataset.status === "complete"){
             li.dataset.status = "incomplete";
             incrementItemsLeft(1);
@@ -124,16 +121,20 @@ function addTodo(task, completed = false){
         }
     }
 
+    let checkbox = document.createElement("span");
+    checkbox.className = "checkbox";
+
     let todo = document.createElement("span");
     todo.className = "todo";
     todo.textContent = task;
 
     let removeBtn = document.createElement("span");
     removeBtn.className = "remove-todo-btn";
-    removeBtn.onclick = function(){
+    removeBtn.addEventListener("click", function(e){
+        e.stopPropagation();
         if(li.dataset.status === "incomplete") incrementItemsLeft(-1);
         todoListElem.removeChild(li);
-    }
+    })
 
     li.appendChild(checkbox);
     li.appendChild(todo);
@@ -151,6 +152,7 @@ function incrementItemsLeft(val){
 /* drag and drop feature */
 function dragNdrop(){
     var currDraggedElem;
+    var continueDragOver = true; //prevent any reordering while transition its position
 
     todoListElem.addEventListener("drop", function(e){
         e.preventDefault();
@@ -159,7 +161,6 @@ function dragNdrop(){
     function dragStart({target}){
         currDraggedElem = target;
         target.style.opacity = ".5";
-        target.style.cursor = "move";
     }
     function dragEnd({target}){
         currDraggedElem = undefined;
@@ -168,12 +169,20 @@ function dragNdrop(){
     }
     function dragOver(e){
         let target = e.target;
-        e.dataTransfer.dropEffect = "move";
-        e.preventDefault();
-        if(target !== currDraggedElem && target.parentNode === todoListElem){
-            if(indexOf(currDraggedElem) > indexOf(target)){
+        if(target !== currDraggedElem && target.parentNode === todoListElem && continueDragOver){
+            e.dataTransfer.dropEffect = "move";
+            e.preventDefault();
+            let d = indexOf(currDraggedElem);
+            let t = indexOf(target);
+
+            /**continueDragover is set false while the target list is transitioning */
+            continueDragOver = false;
+            setTimeout(()=>{continueDragOver = true}, 100);
+            if(d > t){
+                target.style.animation = "move-down .1s linear 0s";
                 target.insertAdjacentElement("beforebegin", currDraggedElem);
             } else{
+                target.style.animation = "move-up .1s linear 0s";
                 target.insertAdjacentElement("afterend", currDraggedElem);
             }
         }

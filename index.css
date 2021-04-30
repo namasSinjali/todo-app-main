@@ -89,7 +89,9 @@ body[data-theme="dark"] header .theme-btn .dark{
     height: 100%;
     border-radius: 50%;
     border: .05rem solid var(--text-color-faded);
-    background-color:var(--card-bg-color)
+    background-color:var(--card-bg-color);
+    background-repeat: no-repeat;
+    background-position: center;
 }
 .checkbox:hover::before{
     border: none;
@@ -100,8 +102,6 @@ body[data-theme="dark"] header .theme-btn .dark{
     border: none;
     background-color:transparent;
     background-image: url(./images/icon-check.svg);
-    background-repeat: no-repeat;
-    background-position: center;
 }
 
 .remove-todo-btn{
